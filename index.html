@@ -1,5 +1,5 @@
 <body style="margin: 0px;padding: 0px">
-<canvas id="board" style="border: 4px #888 solid;touch-action: none;"></canvas>
+<canvas id="board" style="border: 4px #888 solid"></canvas>
 <script>
 
   // https://stackoverflow.com/a/55666538/148668
@@ -105,25 +105,31 @@ var g_evt = [];
 
 
   document.querySelector('#board').onpointerdown = function(evt){
-    g_evt = evt;
-    if(evt.pointerType == "pen")
+    if(evt.isPrimary)
     {
-      document.querySelector("#board").style.cursor = "none";
-    }else
-    {
-      document.querySelector("#board").style.cursor = "default";
+      g_evt = evt;
+      if(evt.pointerType == "pen")
+      {
+        document.querySelector("#board").style.cursor = "none";
+      }else
+      {
+        document.querySelector("#board").style.cursor = "default";
+      }
+      var prevr = evt.pointerType === "pen" ? 4*evt.pressure : 2;
+      var prevPos = getMousePos(canvas,evt);
+      document.onpointermove = function(evt) {
+        if(evt.isPrimary)
+        {
+          var mousePos = getMousePos(canvas, evt);
+          var r = evt.pointerType === "pen" ? 4*evt.pressure : 2;
+          bresenham(prevPos,mousePos,function(pos,t){disk(pos.x,pos.y,prevr+t*(r-prevr));});
+          //bresenham(prevPos,mousePos,function(pos,t){disk(pos.x,pos.y,r);});
+          prevPos = mousePos;
+          prevr = r;
+        }
+      };
+      document.onpointerup = finish;
     }
-    var prevr = evt.pointerType === "pen" ? 4*evt.pressure : 2;
-    var prevPos = getMousePos(canvas,evt);
-    document.onpointermove = function(evt) {
-        var mousePos = getMousePos(canvas, evt);
-        var r = evt.pointerType === "pen" ? 4*evt.pressure : 2;
-        bresenham(prevPos,mousePos,function(pos,t){disk(pos.x,pos.y,prevr+t*(r-prevr));});
-        //bresenham(prevPos,mousePos,function(pos,t){disk(pos.x,pos.y,r);});
-        prevPos = mousePos;
-        prevr = r;
-        };
-    document.onpointerup = finish;
   };
 
 </script>
