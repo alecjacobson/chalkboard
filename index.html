@@ -1,5 +1,5 @@
 <body style="margin: 0px;padding: 0px">
-<canvas id="board" style="border: 4px #888 solid"></canvas>
+<canvas id="board" style="border: 4px #800 solid"></canvas>
 <script>
 
   // https://stackoverflow.com/a/55666538/148668
@@ -44,6 +44,13 @@
 
 var g_evt = [];
   let canvas = document.querySelector("canvas");
+
+  var canvas_dom = document.getElementById("board");
+  canvas_dom.addEventListener("touchstart",  function(event) {event.preventDefault()});
+  canvas_dom.addEventListener("touchmove",   function(event) {event.preventDefault()})
+  canvas_dom.addEventListener("touchend",    function(event) {event.preventDefault()})
+  canvas_dom.addEventListener("touchcancel", function(event) {event.preventDefault()})
+
   // https://coderwall.com/p/vmkk6a/how-to-make-the-canvas-not-look-like-crap-on-retina
   // Q: Is this actually anti-aliasing?
   // H: Doesn't seem like it... Although a single vertical line does look better
