@@ -1,11 +1,122 @@
-<html>
-  <head>
-    <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/chalkboard.js"></script>
-    <link rel="stylesheet" href="css/style.css">
-  </head>
-  <body>
-    <div id=container>
-    </div>
-  </body>
-</html>
+<body style="margin: 0px;padding: 0px">
+<canvas id="board" style="border: 4px #888 solid"></canvas>
+<script>
+
+  // https://stackoverflow.com/a/55666538/148668
+  function bresenham(startPos, endPos, callback) {
+    var coordinatesArray = new Array();
+    // get rid of this rounding?
+    var iscale = 1.0/scale;
+    var ox1 = Math.round(startPos.x/iscale);
+    var oy1 = Math.round(startPos.y/iscale);
+    var x1 = ox1;
+    var y1 = oy1;
+    var x2 = Math.round(endPos.x  /iscale);
+    var y2 = Math.round(endPos.y  /iscale);
+    // Define differences and error check
+    var dx = Math.abs(x2 - x1);
+    var dy = Math.abs(y2 - y1);
+    var sx = (x1 < x2) ? 1 : -1;
+    var sy = (y1 < y2) ? 1 : -1;
+    var err = dx - dy;
+    var d = Math.sqrt((x2-ox1)*(x2-ox1)+(y2-oy1)*(y2-oy1));
+    // Set first coordinates
+    callback({x: x1*iscale,y: y1*iscale},
+      Math.sqrt((x1-ox1)*(x1-ox1)+(y1-oy1)*(y1-oy1))/ d);
+    // Main loop
+    while (!((x1 == x2) && (y1 == y2))) {
+        var e2 = err << 1;
+        if (e2 > -dy) {
+            err -= dy;
+            x1 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y1 += sy;
+        }
+        // Set coordinates
+      callback({x: x1*iscale,y: y1*iscale},
+        Math.sqrt((x1-ox1)*(x1-ox1)+(y1-oy1)*(y1-oy1))/ d);
+    }
+    // Return the result
+    return coordinatesArray;
+  }
+
+var g_evt = [];
+  let canvas = document.querySelector("canvas");
+  // https://coderwall.com/p/vmkk6a/how-to-make-the-canvas-not-look-like-crap-on-retina
+  // Q: Is this actually anti-aliasing?
+  // H: Doesn't seem like it... Although a single vertical line does look better
+  // with scale=2
+  var scale = 2;
+  var w = 1280;
+  var h = 720;
+  canvas.width = w*scale;
+  canvas.height = h*scale;
+  canvas.style.width = w+"px";
+  canvas.style.height = h+"px";
+  let context = canvas.getContext('2d');
+  context.scale(scale,scale);
+
+  context.fillStyle = "#121";
+  context.fillRect(0, 0, 1280, 720);
+  context.fillStyle = '#f0eff0';
+
+  function disk(x,y,r)
+  {
+    // funny things happen with r<0.5
+    r = Math.max(r,0.5);
+    context.fillRect(x-r+1, y-r+1, 2*r-1, 2*r-1);
+  }
+
+
+  function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+      x: evt.clientX - rect.left,
+      y: evt.clientY - rect.top
+    };
+  }
+
+  function finish(evt)
+  {
+    // On the next move, determine if moving with pen or mouse and only if mouse
+    // then show cursor
+    document.onpointermove  = function(evt)
+    {
+      if(evt.pointerType == "pen")
+      {
+        document.querySelector("#board").style.cursor = "none";
+      }else
+      {
+        document.querySelector("#board").style.cursor = "default";
+      }
+      document.onpointermove = [];
+    };
+    document.onpointerup = [];
+  };
+
+
+  document.querySelector('#board').onpointerdown = function(evt){
+    g_evt = evt;
+    if(evt.pointerType == "pen")
+    {
+      document.querySelector("#board").style.cursor = "none";
+    }else
+    {
+      document.querySelector("#board").style.cursor = "default";
+    }
+    var prevr = evt.pointerType === "pen" ? 4*evt.pressure : 2;
+    var prevPos = getMousePos(canvas,evt);
+    document.onpointermove = function(evt) {
+        var mousePos = getMousePos(canvas, evt);
+        var r = evt.pointerType === "pen" ? 4*evt.pressure : 2;
+        bresenham(prevPos,mousePos,function(pos,t){disk(pos.x,pos.y,prevr+t*(r-prevr));});
+        //bresenham(prevPos,mousePos,function(pos,t){disk(pos.x,pos.y,r);});
+        prevPos = mousePos;
+        prevr = r;
+        };
+    document.onpointerup = finish;
+  };
+
+</script>
