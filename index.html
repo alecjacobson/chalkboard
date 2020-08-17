@@ -87,20 +87,23 @@ var g_evt = [];
 
   function finish(evt)
   {
-    // On the next move, determine if moving with pen or mouse and only if mouse
-    // then show cursor
-    document.onpointermove  = function(evt)
+    if(evt.isPrimary)
     {
-      if(evt.pointerType == "pen")
+      // On the next move, determine if moving with pen or mouse and only if
+      // mouse then show cursor
+      document.onpointermove  = function(evt)
       {
-        document.querySelector("#board").style.cursor = "none";
-      }else
-      {
-        document.querySelector("#board").style.cursor = "default";
-      }
-      document.onpointermove = [];
-    };
-    document.onpointerup = [];
+        if(evt.pointerType == "pen")
+        {
+          document.querySelector("#board").style.cursor = "none";
+        }else
+        {
+          document.querySelector("#board").style.cursor = "default";
+        }
+        document.onpointermove = [];
+      };
+      document.onpointerup = [];
+    }
   };
 
 
